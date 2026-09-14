@@ -1,0 +1,5 @@
+.venv
+.env
+*.pyc
+rag_vectors_with_meta/chroma_db/
+rag_vectors/chroma_db/

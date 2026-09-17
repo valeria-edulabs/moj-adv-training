@@ -1,12 +1,15 @@
+from datetime import datetime
 from dotenv import load_dotenv
 from langchain_core.tools import tool
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langgraph.checkpoint.memory import MemorySaver
 from langchain.agents import create_agent
+from langchain.agents.middleware import dynamic_prompt, ModelRequest
 
 load_dotenv()
 
 llm = ChatGoogleGenerativeAI(model="gemini-flash-lite-latest")
+
 
 memory = MemorySaver()
 
@@ -60,10 +63,16 @@ You are an expert Israeli Income Tax Agent (Yoez Mas / Roheh Heshbon persona) sp
 - **Disclaimer:** At the end of complex advice or calculations, always include a brief disclaimer stating that your response is for informational purposes only and does not replace official advice from a certified Israeli accountant (CPA) or the Israel Tax Authority (Reshut HaMisim).
 """
 
+@dynamic_prompt
+def dynamic_system_prompt(request: ModelRequest) -> str:
+    current_date = datetime.now().strftime("%Y-%m-%d")
+    return f"{SYSTEM_PROMPT}\n\nToday's date is: {current_date}."
+
+
 tax_agent = create_agent(
     llm,
     tools,
-    system_prompt=SYSTEM_PROMPT,
+    middleware=[dynamic_system_prompt],
     checkpointer=memory
 )
 
@@ -84,3 +93,4 @@ def save_graph_png():
 
 if __name__ == '__main__':
     save_graph_png()
+    # llm.invoke("tell me a joke")

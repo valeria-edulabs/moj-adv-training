@@ -1,5 +1,8 @@
 # **🎯 System Health Agent with Prebuilt Middleware & HITL**
 
+Documentation:
+https://docs.langchain.com/oss/python/langchain/middleware/built-in
+
 ## **1\. Exercise Overview**
 
 In this exercise, participants will upgrade their stateful **System Health & Diagnostic Agent** by refactoring soft system prompt guardrails into deterministic code-level middleware integrated into LangChain's create\_agent construct. The updated agent performs operational health checks (system performance metrics, endpoint status checks, and directory metadata inspections), enforces strict security controls, and persists long-lived conversational state to a MongoDB database across application restarts.  

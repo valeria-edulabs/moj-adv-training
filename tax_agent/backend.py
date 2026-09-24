@@ -1,3 +1,4 @@
+from langchain.agents.middleware import ToolCallLimitMiddleware
 from datetime import datetime
 from dotenv import load_dotenv
 from langchain_core.tools import tool
@@ -72,7 +73,10 @@ def dynamic_system_prompt(request: ModelRequest) -> str:
 tax_agent = create_agent(
     llm,
     tools,
-    middleware=[dynamic_system_prompt],
+    middleware=[
+        dynamic_system_prompt,
+        ToolCallLimitMiddleware(thread_limit=2, run_limit=1)
+        ],
     checkpointer=memory
 )
 

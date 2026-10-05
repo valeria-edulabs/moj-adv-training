@@ -1,0 +1,1 @@
+EMBEDDING_MODEL = "models/gemini-embedding-2"

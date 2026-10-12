@@ -68,6 +68,7 @@ return_reason = state.get("return_reason")
 proposal = state.get("proposal")
 flow_stage = state.get("flow_stage", "collecting_info")
 customer_decision = state.get("customer_decision")
+decision_message = state.get("decision_message")
 resolution_message = state.get("resolution_message")
 
 # Layout: Split into Chat and Inspector panels
@@ -105,6 +106,8 @@ with col_state:
                 st.markdown("🟢 **Customer Decision:** `Accepted proposal`")
             else:
                 st.markdown("🔴 **Customer Decision:** `Rejected proposal (Escalate)`")
+            if decision_message:
+                st.caption(f"💬 *\"{decision_message}\"*")
         else:
             st.markdown("⚪ **Customer Decision:** *Pending Proposed Solution*")
             
@@ -174,6 +177,8 @@ with col_chat:
                     st.markdown("### 💡 Proposed Solution")
                     st.info(msg["content"])
                 elif msg_type == "resolution":
+                    if msg.get("decision_message"):
+                        st.markdown(msg["decision_message"])
                     if "Approved" in msg["content"]:
                         st.success(msg["content"])
                     else:
@@ -188,9 +193,11 @@ with col_chat:
         
         with st.chat_message("assistant"):
             status_container = st.container()
+            decision_placeholder = st.empty()
             message_placeholder = st.empty()
             
             full_response = ""
+            decision_llm_message = ""
             msg_type = "instruction"
             
             # Stream execution
@@ -231,6 +238,12 @@ with col_chat:
                             with st.status("🤖 Executing Intent Classifier Node", state="complete") as status:
                                 st.write(f"- Classifying customer response: *\"{stream_input}\"*")
                                 st.write(f"- Evaluated Intent Decision: **{decision_data.get('customer_decision')}**")
+                                if decision_data.get("decision_message"):
+                                    st.write(f"- Generated Note: *\"{decision_data.get('decision_message')}\"*")
+                        
+                        if decision_data.get("decision_message"):
+                            decision_llm_message = decision_data["decision_message"]
+                            decision_placeholder.markdown(decision_llm_message)
                 
                 # 4. Refund Node
                 if "deterministic_refund" in chunk:
@@ -258,11 +271,14 @@ with col_chat:
                         message_placeholder.warning(full_response)
             
             if full_response:
-                messages.append({
+                msg_entry = {
                     "role": "assistant",
                     "content": full_response,
                     "type": msg_type
-                })
+                }
+                if decision_llm_message:
+                    msg_entry["decision_message"] = decision_llm_message
+                messages.append(msg_entry)
                 st.session_state.history_by_thread[thread_id] = messages
                 
                 # Refresh to update the live inspector details immediately

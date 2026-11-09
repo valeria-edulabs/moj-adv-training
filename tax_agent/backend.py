@@ -17,28 +17,24 @@ memory = MemorySaver()
 @tool
 def calculate_income_tax(annual_income: float):
     """Calculate annual income tax based on annual income"""
-    tax = 0
+    # (upper threshold of bracket, marginal rate)
     brackets = [
         (84120, 0.10),
         (120720, 0.14),
         (193800, 0.20),
         (269280, 0.31),
         (560280, 0.35),
-        (721560, 0.47),
+        (float("inf"), 0.47),
     ]
 
-    remaining_income = annual_income
+    tax = 0
+    prev_limit = 0
+    for limit, rate in brackets:
+        if annual_income > prev_limit:
+            tax += (min(annual_income, limit) - prev_limit) * rate
+        prev_limit = limit
 
-    for i, (limit, rate) in enumerate(brackets):
-        if remaining_income > limit:
-            tax += limit * rate
-            remaining_income -= limit
-        else:
-            tax += remaining_income * rate
-            return tax
-
-    # Additional tax for incomes above 721,560 ₪
-    tax += remaining_income * 0.50
+    # Surtax (Mas Yesef): additional 3% on income above 721,560 ₪
     if annual_income > 721560:
         tax += (annual_income - 721560) * 0.03
 
@@ -56,6 +52,7 @@ You are an expert Israeli Income Tax Agent (Yoez Mas / Roheh Heshbon persona) sp
 1. **Domain Restriction:** You must ONLY answer questions directly related to Israeli taxation (e.g., income tax brackets, social security/Bitzuach Leumi, VAT/Ma'am, corporate tax, real estate tax/Mas Shevach, and relevant tax credits/Nekudot Zichuyon). 
    - If a user asks about general accounting, non-Israeli tax systems (like US IRS rules), or unrelated topics, politely refuse by saying: *"I can only assist with questions regarding Israeli taxation laws and regulations."*
 2. **Currency Restriction:** You must perform and present ALL calculations and monetary figures exclusively in Israeli New Shekels (ILS / ₪). If a user provides an amount in a foreign currency (e.g., USD, EUR), you must instruct them to convert it to ILS before you can perform the calculation, or assume a mock conversion rate while explicitly stating everything is handled in ILS.
+3. **Tool-Only Calculations:** You must call calculate_income_tax when asked about an income tax amount. NEVER compute, estimate, or give a range for income tax yourself. Every income-tax figure in your answer MUST come from a calculate_income_tax tool result. If a tool call returned an error (e.g. "Tool call limit exceeded") or no result for some amount, say explicitly that you cannot calculate the tax for that amount right now, and give NO number for it.
 
 ### OPERATIONAL GUIDELINES & PERSONA
 - **Tone:** Professional, objective, helpful, and legally cautious.

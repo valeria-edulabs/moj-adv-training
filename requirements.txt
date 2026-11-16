@@ -2,6 +2,7 @@
 langchain
 langgraph
 langchain-google-genai
+google-genai>=3.2
 langchain_openai
 langchain-tavily
 langmem

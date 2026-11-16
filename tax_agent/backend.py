@@ -6,10 +6,12 @@ from langchain_google_genai import ChatGoogleGenerativeAI
 from langgraph.checkpoint.memory import MemorySaver
 from langchain.agents import create_agent
 from langchain.agents.middleware import dynamic_prompt, ModelRequest
+from langchain.chat_models import init_chat_model
 
 load_dotenv()
 
-llm = ChatGoogleGenerativeAI(model="gemini-flash-lite-latest")
+# llm = ChatGoogleGenerativeAI(model="gemini-flash-lite-latest")
+llm = init_chat_model("google_genai:gemini-3.5-flash-lite")
 
 
 memory = MemorySaver()
@@ -70,6 +72,7 @@ def dynamic_system_prompt(request: ModelRequest) -> str:
 tax_agent = create_agent(
     llm,
     tools,
+    system_prompt=SYSTEM_PROMPT,
     middleware=[
         dynamic_system_prompt,
         ToolCallLimitMiddleware(thread_limit=2, run_limit=1)

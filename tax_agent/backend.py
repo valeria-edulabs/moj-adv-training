@@ -75,20 +75,64 @@ tax_agent = create_agent(
     system_prompt=SYSTEM_PROMPT,
     middleware=[
         dynamic_system_prompt,
-        ToolCallLimitMiddleware(thread_limit=2, run_limit=1)
+        ToolCallLimitMiddleware(thread_limit=2, run_limit=1, exit_behavior='end')
         ],
     checkpointer=memory
 )
 
 
+def pretty_print_chunk(chunk: dict):
+    """Pretty-print a single 'updates' chunk: {node_name: state_update}."""
+    for node_name, update in chunk.items():
+        print(f"\n{'=' * 30} 🔹 Node: {node_name} {'=' * 30}")
+        if not update:
+            print("(no state update)")
+            continue
+        for key, value in update.items():
+            if key == "messages":
+                for msg in value:
+                    msg.pretty_print()
+            else:
+                print(f"{key}: {value}")
+
+
+def print_snapshot(snapshot):
+    """Print one checkpoint (StateSnapshot) as stored by the checkpointer."""
+    cfg = snapshot.config["configurable"]
+    meta = snapshot.metadata or {}
+    print(f"\n{'#' * 30} 📸 Checkpoint step={meta.get('step')} source={meta.get('source')} {'#' * 30}")
+    print(f"checkpoint_id: {cfg.get('checkpoint_id')}")
+    parent = snapshot.parent_config["configurable"].get("checkpoint_id") if snapshot.parent_config else None
+    print(f"parent_id:     {parent}")
+    print(f"created_at:    {snapshot.created_at}")
+    print(f"writes:        {meta.get('writes')}")
+    print(f"next:          {snapshot.next}")
+    print(f"tasks:         {[t.name for t in snapshot.tasks]}")
+    for key, value in snapshot.values.items():
+        if key == "messages":
+            print(f"messages ({len(value)}):")
+            for msg in value:
+                msg.pretty_print()
+        else:
+            print(f"{key}: {value}")
+
+
 def stream(text: str, thread_id: str):
     config = {"configurable": {"thread_id": thread_id}}
+    seen = {s.config["configurable"]["checkpoint_id"] for s in tax_agent.get_state_history(config)}
+
     for chunk in tax_agent.stream(
         {"messages": [{"role": "user", "content": text}]},
         config=config,
         stream_mode="updates"
     ):
         yield chunk
+
+    # Print every checkpoint the checkpointer stored during this run (oldest first)
+    new_snapshots = [s for s in tax_agent.get_state_history(config)
+                     if s.config["configurable"]["checkpoint_id"] not in seen]
+    for snapshot in reversed(new_snapshots):
+        print_snapshot(snapshot)
 
 
 

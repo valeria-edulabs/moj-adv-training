@@ -19,16 +19,18 @@ TASK = (
 )
 
 # 1) The agent participants already know
-shallow = create_agent(
-    MODEL,
-    tools=[internet_search],
-    system_prompt="You are a research assistant.",
-)
+# shallow = create_agent(
+#     MODEL,
+#     tools=[internet_search],
+#     system_prompt="You are a research assistant.",
+# )
 
 # 2) The deep agent: same model, same tool, same prompt
 deep = create_deep_agent(
     MODEL,
     tools=[internet_search],
+    # tools=[],
+    # system_prompt="you are assistant",
     system_prompt=(
         "You are a research assistant. Plan first with write_todos, keep raw notes in "
         "/notes/*.md, and write the final answer to /report.md before replying."
@@ -39,9 +41,10 @@ deep = create_deep_agent(
 
 if __name__ == "__main__":
     inputs = {"messages": [{"role": "user", "content": TASK}]}
+    # inputs = {"messages": [{"role": "user", "content": "hi"}]}
 
-    print("=" * 30, "create_agent", "=" * 30)
-    print_trace(shallow.invoke(inputs))
+    # print("=" * 30, "create_agent", "=" * 30)
+    # print_trace(shallow.invoke(inputs))
 
     print("\n" + "=" * 30, "create_deep_agent", "=" * 30)
     result = deep.invoke(inputs)

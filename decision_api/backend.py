@@ -60,14 +60,6 @@ def demo_noul():
 # ---------------------------------------------------------------------------
 # 2. Multiple-choice question (choice) + confidence gating
 # ---------------------------------------------------------------------------
-DEPARTMENTS = {
-    "income_tax": "Questions about income tax, brackets, refunds, tax credit points",
-    "vat": "Questions about VAT (Ma'am), invoices, VAT reporting",
-    "real_estate": "Purchase tax, betterment tax (Mas Shevach), property sales",
-    "payments": "Debts, installment plans, payment deferrals",
-    "other": "",  # empty description is allowed
-}
-
 
 def route_inquiry(text: str) -> str:
     result = client.decisions.create(
@@ -77,7 +69,13 @@ def route_inquiry(text: str) -> str:
             "department": {
                 "type": "choice",
                 "instructions": "Which department should handle this citizen inquiry?",
-                "criteria": DEPARTMENTS,
+                "criteria": {
+                    "income_tax": "Questions about income tax, brackets, refunds, tax credit points",
+                    "vat": "Questions about VAT (Ma'am), invoices, VAT reporting",
+                    "real_estate": "Purchase tax, betterment tax (Mas Shevach), property sales",
+                    "payments": "Debts, installment plans, payment deferrals",
+                    "other": "",  # empty description is allowed
+                },
             }
         },
     )
@@ -225,8 +223,8 @@ def demo_pdf(pdf_path: str):
 
 if __name__ == "__main__":
     demo_noul()
-    demo_choice()
-    demo_score()
-    demo_multi_question()
-    if len(sys.argv) > 1:  # python decision_api/backend.py path/to/file.pdf
-        demo_pdf(sys.argv[1])
+    # demo_choice()
+    # demo_score()
+    # demo_multi_question()
+    # if len(sys.argv) > 1:  # python decision_api/backend.py path/to/file.pdf
+    #     demo_pdf(sys.argv[1])

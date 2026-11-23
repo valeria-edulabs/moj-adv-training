@@ -109,7 +109,7 @@ def get_or_create_sandbox(thread_id: str) -> tuple[Any, DockerSandboxBackend]:
             ])
 
         # Initialize the Deep Agent with Docker sandbox backend and HITL interrupt on execute
-        llm = ChatGoogleGenerativeAI(model="gemini-flash-lite-latest", temperature=0.1)
+        llm = ChatGoogleGenerativeAI(model="gemini-flash-lite-latest")
         agent = create_deep_agent(
             model=llm,
             backend=backend,

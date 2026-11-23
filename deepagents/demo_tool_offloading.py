@@ -57,23 +57,9 @@ def main():
         system_prompt="You are an SRE assistant.",
         backend=FilesystemBackend(root_dir=str(WORKSPACE), virtual_mode=True),
     )
-    result = agent.invoke({"messages": [{"role": "user", "content":
+    agent.invoke({"messages": [{"role": "user", "content":
         "Fetch today's logs for the 'checkout' service and list every ERROR with its timestamp."}]})
 
-    print_trace(result)
-
-    # --- what actually landed in the context window? ---
-    raw_size = len(fetch_server_logs.invoke({"service": "checkout"}))
-    for msg in result["messages"]:
-        if isinstance(msg, ToolMessage) and msg.name == "fetch_server_logs":
-            print("\n=== what the MODEL saw as the fetch_server_logs result ===")
-            print(msg.content)
-            print(f"=== raw tool output: {raw_size:,} chars  ->  in context: {len(msg.content):,} chars ===")
-
-    # --- and where did the full output go? ---
-    print("\n--- offloaded files on disk ---")
-    for path in sorted((WORKSPACE / "large_tool_results").glob("*")):
-        print(f"  {path}  ({path.stat().st_size:,} bytes)")
 
 
 if __name__ == "__main__":

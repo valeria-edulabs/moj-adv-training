@@ -17,7 +17,7 @@ Download *The Winter's Tale* (about 40,000 tokens) and wrap it in a tool.
 import requests
 from langchain_core.tools import tool
 
-raw = requests.get("https://www.gutenberg.org/cache/epub/1539/pg1539.txt", timeout=30).text
+raw = requests.get("https://gutenberg.pglaf.org/cache/epub/1539/pg1539.txt", timeout=30).text
 start = raw.index("\n", raw.index("*** START")) + 1
 PLAY = raw[start:raw.index("*** END")].strip()   # drop the Gutenberg license
 

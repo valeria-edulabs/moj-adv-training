@@ -46,7 +46,7 @@ seed()
 agent = create_deep_agent(
     MODEL,
     backend=FilesystemBackend(root_dir=str(HOME), virtual_mode=True),
-    memory=["/AGENTS.md"],    # injected into the system prompt every run
+    memory=["/AGENTS.md", "/memories/preferences.md"],    # injected into the system prompt every run
     skills=["/skills/"],      # a directory of skill folders (progressive disclosure)
 )
 

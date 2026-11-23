@@ -49,12 +49,12 @@ def demo_long_term_memory():
     agent = create_deep_agent(
         MODEL,
         system_prompt="Save durable user preferences to /memories/preferences.md. "
-                      "Always check /memories/ before answering.",
+                      "Always follow the saved user preferences when answering.",
         backend=CompositeBackend(
             default=StateBackend(),
             # /memories/preferences.md  ->  ./memories/preferences.md on disk
             # (for production you'd typically use StoreBackend + PostgresStore instead)
-            routes={"/memories/": FilesystemBackend(root_dir="./memories", virtual_mode=True)},
+            routes={"/memories/": FilesystemBackend(root_dir="./agent_home/memories", virtual_mode=True)},
         ),
         checkpointer=MemorySaver(),
     )
@@ -62,15 +62,9 @@ def demo_long_term_memory():
         "Remember: I prefer answers in bullet points and examples in Python."}]}, config=thread())
 
     # brand-new thread: conversation history is empty, but /memories/ is still there
-    result = agent.invoke({"messages": [{"role": "user", "content":
-        "Explain what a Python decorator is."}]}, config=thread())
-    print_trace(result)
+    agent.invoke({"messages": [{"role": "user", "content":
+        "Explain how bubble sort works."}]}, config=thread())
 
-    # the memories are plain files now: open ./memories/ in your editor, or:
-    # print("\n--- contents of ./memories/ ---")
-    # for path in sorted(Path("./memories").glob("**/*")):
-    #     if path.is_file():
-    #         print(f"\n{path} ->\n{path.read_text()}")
 
 
 if __name__ == "__main__":
